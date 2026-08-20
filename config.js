@@ -125,5 +125,5 @@ export const CONFIG = {
   },
 
   /** Set true to print every request and state transition to the console. */
-  debug: false,
+  debug: true,
 };
