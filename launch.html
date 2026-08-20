@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Opening Patient Trends…</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!--
+  The EHR launch URL. Register THIS page with the authorization server as the
+  app's launch URL; register index.html as the redirect URI.
+  The EMR opens it as  launch.html?iss=<fhir base>&launch=<opaque context>
+  and this page redirects to the authorization server. There is nothing to
+  click and nothing to configure — if it stops here, it is showing you why.
+-->
+<div id="root">
+  <div class="screen">
+    <div class="screen-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Opening Patient Trends</h1>
+      <p>Connecting to the clinical record.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { beginLaunch, AppError } from './src/smart.js';
+  import { error as logError } from './src/log.js';
+
+  function screen(title, detail, code, isError) {
+    const root = document.getElementById('root');
+    root.textContent = '';
+    const card = document.createElement('div');
+    card.className = 'screen-card' + (isError ? ' screen-card-error' : '');
+    const mark = document.createElement('div');
+    mark.className = 'screen-mark';
+    mark.textContent = isError ? '!' : '⌘';
+    const h = document.createElement('h1');
+    h.textContent = title;
+    const p = document.createElement('p');
+    p.textContent = detail;
+    card.append(mark, h, p);
+    if (code) {
+      const c = document.createElement('p');
+      c.className = 'screen-code';
+      c.textContent = code;
+      card.appendChild(c);
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'screen';
+    wrap.appendChild(card);
+    root.appendChild(wrap);
+  }
+
+  const params = new URLSearchParams(location.search);
+
+  beginLaunch({ iss: params.get('iss'), launch: params.get('launch') }).catch((err) => {
+    if (err instanceof AppError) {
+      logError(err.code, err.title, err.detail);
+      screen(err.title, err.detail, err.code, true);
+    } else {
+      logError(err);
+      screen(
+        'Could not open the app',
+        String(err?.message || err),
+        'LAUNCH_FAILED',
+        true
+      );
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Screenshots written by the end-to-end harness.
+test/screens/
+
+# The app has no dependencies; this is only here to keep a stray
+# `npm install` out of the published artifact.
+node_modules/
+
+.DS_Store

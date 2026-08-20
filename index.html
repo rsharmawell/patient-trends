@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Patient Trends</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232a78d6'/><path d='M6 21 L12 14 L17 18 L26 8' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+</head>
+<body>
+
+<!--
+  This page is both the app and the OAuth redirect target. It is never the entry
+  point for a user: an EHR opens launch.html, which redirects here with an
+  authorization code. Opening it directly shows the "open from the EHR" screen.
+-->
+<div id="root">
+  <div class="screen">
+    <div class="screen-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Starting</h1>
+      <p>Restoring the session.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { boot } from './src/app.js';
+  boot();
+</script>
+</body>
+</html>

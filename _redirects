@@ -1,0 +1,5 @@
+# Cloudflare Pages.
+#
+# Intentionally empty. Do NOT add an SPA catch-all (/* /index.html 200): the
+# OAuth redirect arrives at /index.html?code=… and a catch-all would also
+# swallow /launch.html, which is the app's only entry point.

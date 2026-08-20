@@ -1,0 +1,11 @@
+# Cloudflare Pages headers.
+#
+# The app holds an access token in sessionStorage for the tab's lifetime, so
+# nothing here should be cached by a shared proxy, and the page should not be
+# framed or referred out with a full URL.
+/*
+  Cache-Control: no-store
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=()

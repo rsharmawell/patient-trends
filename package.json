@@ -1,0 +1,17 @@
+{
+  "name": "patient-trends",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EHR-launched SMART on FHIR patient viewer — longitudinal Observation trends",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node test/mock-ehr.mjs 8099",
+    "test": "node test/e2e.mjs",
+    "test:session": "node test/e2e-session.mjs",
+    "check": "for f in config.js src/*.js test/*.mjs; do node --check \"$f\"; done"
+  }
+}

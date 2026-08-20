@@ -1,0 +1,110 @@
+name: Deploy to GitHub Pages
+
+# Static ES modules — nothing to bundle, so the repo root is published verbatim.
+#
+# If a step ever fails with "Unable to resolve action", the action's major tag
+# has moved on. The canonical reference is the starter workflow GitHub offers
+# itself: Settings → Pages → Source: GitHub Actions → "Static HTML". Copy the
+# action versions from there into this file; the steps around them do not change.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  # Verification runs as its own job so a broken test blocks the deploy rather
+  # than being noticed after the site is already live.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Check every module parses
+        run: |
+          set -e
+          for f in config.js src/*.js test/*.mjs; do
+            echo "checking $f"
+            node --check "$f"
+          done
+
+      # The loopback entries in config.js are what let the bundled mock and
+      # local development work, and they are inert once deployed:
+      # validateIssuer() drops loopback issuers as soon as the app is served
+      # from a non-loopback https origin. This step just puts what is being
+      # published into the build log, so a wrong client id or a forgotten
+      # issuer is visible without opening the file.
+      - name: Report what this deployment trusts
+        run: |
+          node --input-type=module -e "
+            const { CONFIG } = await import('./config.js');
+            console.log('clientId : ' + CONFIG.clientId);
+            console.log('scopes   : ' + CONFIG.scopes.join(' '));
+            console.log('trustedIssuers:');
+            for (const i of CONFIG.trustedIssuers) console.log('  - ' + i);
+            console.log('pinnedEndpoints:');
+            for (const k of Object.keys(CONFIG.pinnedEndpoints)) console.log('  - ' + k);
+          "
+
+      - name: Locate a browser for the end-to-end run
+        id: browser
+        run: |
+          for candidate in \
+            "$(command -v google-chrome || true)" \
+            "$(command -v google-chrome-stable || true)" \
+            "$(command -v chromium || true)" \
+            "$(command -v chromium-browser || true)" \
+            /usr/bin/google-chrome /usr/bin/chromium; do
+            if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+              echo "chrome=$candidate" >> "$GITHUB_OUTPUT"
+              echo "using $candidate"
+              exit 0
+            fi
+          done
+          echo "::error::No Chrome or Chromium on this runner. Install one, or drop the end-to-end step."
+          exit 1
+
+      - name: End-to-end EHR launch against the bundled mock
+        env:
+          CHROME: ${{ steps.browser.outputs.chrome }}
+        run: |
+          node test/mock-ehr.mjs 8099 &
+          MOCK_PID=$!
+          # Wait for the mock to answer rather than sleeping a guessed interval.
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8099/fhir/r4/metadata > /dev/null; then break; fi
+            sleep 1
+          done
+          node test/e2e.mjs
+          kill $MOCK_PID
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
