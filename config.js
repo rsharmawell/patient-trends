@@ -15,7 +15,7 @@ export const CONFIG = {
    * -------------------------------------------------------------- */
 
   /** Public client id issued by the authorization server. */
-  clientId: 'polaris-patient-trends',
+  clientId: 'QDukKIraoKAefrNE9KXgk684LDWlEhm4',
 
   /**
    * Scopes requested at launch.
@@ -57,6 +57,7 @@ export const CONFIG = {
     'http://localhost:8099/fhir/r4',
     'http://localhost:8092/fhir/r4',
     'http://127.0.0.1:8099/fhir/r4',
+    'https://w4511nbn-80.use.devtunnels.ms/fhir/r4'
   ],
 
   /* -------------------------------------------------------------- *
