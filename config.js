@@ -32,7 +32,7 @@ export const CONFIG = {
     'launch',
     'openid',
     'fhirUser',
-    'online_access',
+    'offline_access',
     'patient/Patient.read',
     'patient/Observation.read',
     'patient/Condition.read',
